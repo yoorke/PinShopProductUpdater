@@ -51,7 +51,7 @@ namespace PinShopProductUpdater
             return JsonConvert.DeserializeObject<string[]>(responseString);
         }
 
-        public string[] ParseProductsForSaving(string eweCategory, string[] eweSubcategories, int categoryID, string logFilename)
+        public string[] ParseProductsForSaving(string eweCategory, string[] eweSubcategories, int categoryID, string logFilename, int eweCategoryID)
         {
             Common.log("Preuzimam proizvode...", true, logFilename);
             List<EweProduct> products = new List<EweProduct>();
@@ -78,6 +78,7 @@ namespace PinShopProductUpdater
                         product.Subcategory = xmlNode.SelectSingleNode("subcategory").InnerText.Trim();
                         product.UpdateCategory = eweCategory;
                         product.CategoryID = categoryID.ToString();
+                        product.EweCategoryID = eweCategoryID.ToString();
                         if (xmlNode.SelectSingleNode("subcategory").InnerText.Trim() != string.Empty)
                             products.Add(product);
                     }
@@ -99,7 +100,7 @@ namespace PinShopProductUpdater
 
 
                 //string xml = @"<products><product><id><![CDATA[ NOT04915 ]]></id><manufacturer><![CDATA[ TARGUS ]]></manufacturer><name><![CDATA[ CleanVu cleaning pad TXA002EU ]]></name><category><![CDATA[ NOTEBOOK ]]></category><subcategory><![CDATA[ DODATNA OPREMA ]]></subcategory><price><![CDATA[ 108.09 ]]></price><price_rebate><![CDATA[ 108.09 ]]></price_rebate><vat><![CDATA[ 20 ]]></vat><ean><![CDATA[ 5051794006100 ]]></ean><images><image><![CDATA[ http://www.ewe.rs/slike-proizvoda/NOT04915_v.jpg ]]></image><image><![CDATA[ http://www.ewe.rs/slike-proizvoda/NOT04915_1.jpg ]]></image><image><![CDATA[ http://www.ewe.rs/slike-proizvoda/NOT04915_2.jpg ]]></image></images><specifications><attribute_group name='Karakteristike'><attribute name='Tip'><value><![CDATA[ Cleaning pad ]]></value></attribute></attribute_group><attribute_group name='Fizičke karakteristike'><attribute name='Dimenzije'><value><![CDATA[ 76mm x 76mm ]]></value></attribute><attribute name='Masa'><value><![CDATA[ 44g ]]></value></attribute><attribute name='Boja'><value><!CDATA[ Crna ]]></value></attribute></attribute_group><attribute_group name='Garancija'><attribute name='Garancija'><value><![CDATA[ 2 godine ]]></value></attribute></attribute_group></specifications></product></products>";
-                string url = @"http://www.ewe.rs/share/backend_231/?user=pinservis&secretcode=754fc";
+                string url = @"https://www.ewe.rs/share/backend_231/?user=pinservis&secretcode=754fc";
                 if (images)
                     url += "&images=1";
                 if (attributes)

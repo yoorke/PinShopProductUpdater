@@ -19,10 +19,16 @@ namespace PinShopProductUpdater
 
         static void Main(string[] args)
         {
-            logFilename = string.Format("{0:00}", DateTime.Now.Day) + string.Format("{0:00}", DateTime.Now.Month) + DateTime.Now.Year.ToString() + string.Format("{0:00}", DateTime.Now.Hour) + string.Format("{0:00}", DateTime.Now.Minute) + ".log";
-            startDateTime = DateTime.Now.ToString();
-            saveProductsForCategories();
-            
+            try
+            { 
+                logFilename = string.Format("{0:00}", DateTime.Now.Day) + string.Format("{0:00}", DateTime.Now.Month) + DateTime.Now.Year.ToString() + string.Format("{0:00}", DateTime.Now.Hour) + string.Format("{0:00}", DateTime.Now.Minute) + ".log";
+                startDateTime = DateTime.Now.ToString();
+                saveProductsForCategories();
+            }
+            catch(Exception ex)
+            {
+                Common.log(ex.Message, true, logFilename);
+            }
         }
 
         private static void saveProductsForCategories()
@@ -63,7 +69,7 @@ namespace PinShopProductUpdater
                         subcategories += eweSubCategory.Name + "|";
                     Common.log("Selektovane Ewe kategorije: " + subcategories.Substring(0, subcategories.Length - 1), true, logFilename);
 
-                    string[] status = new EweBL().ParseProductsForSaving(eweCategoryName, subcategories.Substring(0, subcategories.Length - 1).Split('|'), category.CategoryID, logFilename);
+                    string[] status = new EweBL().ParseProductsForSaving(eweCategoryName, subcategories.Substring(0, subcategories.Length - 1).Split('|'), category.CategoryID, logFilename, eweCategoryID);
                     updateStatus.Append("<tr>");
                     updateStatus.Append("<td style='padding:0.5em" + (index % 2 == 0 ? ";background-color:#f8f8f8" : "") + "'>" + "<a href='" + ConfigurationManager.AppSettings["webshopAdminUrl"] + "/getProducts.aspx?categoryID=" + category.CategoryID + "'>" + category.Name.PadLeft(50) + "</a>" + "</td>" + "<td style='padding:0.5em" + (index % 2 == 0 ? ";background-color:#f8f8f8" : "") + "'>" + "<a href='" + ConfigurationManager.AppSettings["webshopAdminUrl"] + "/getProducts.aspx?categoryID=" + category.CategoryID + "'>" + status[0] + "</a>" + "</td>" + "<td style='padding:0.5em" + (index % 2 == 0 ? ";background-color:#f8f8f8" : "") + "'>" + "<a href='" + ConfigurationManager.AppSettings["webshopAdminUrl"] + "/getProducts.aspx?categoryID=" + category.CategoryID + "'>" + status[1] + "</a>" + "</td>");
                     updateStatus.Append("</tr>");

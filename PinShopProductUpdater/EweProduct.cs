@@ -21,5 +21,6 @@ namespace PinShopProductUpdater
         public string Subcategory { get; set; }
         public string UpdateCategory { get; set; }
         public string CategoryID { get; set; }
+        public string EweCategoryID { get; set; }
     }
 }
