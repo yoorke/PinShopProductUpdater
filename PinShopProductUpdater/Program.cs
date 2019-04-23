@@ -19,6 +19,7 @@ namespace PinShopProductUpdater
 
         static void Main(string[] args)
         {
+            save3gProducts();
             try
             { 
                 logFilename = string.Format("{0:00}", DateTime.Now.Day) + string.Format("{0:00}", DateTime.Now.Month) + DateTime.Now.Year.ToString() + string.Format("{0:00}", DateTime.Now.Hour) + string.Format("{0:00}", DateTime.Now.Minute) + ".log";
@@ -87,6 +88,11 @@ namespace PinShopProductUpdater
             updateStatus.Append("</table>");
             updateStatus.Append("<p>Ažuriranje završeno: " + DateTime.Now.ToString() + "</p>");
             Common.sendMail(updateStatus.ToString(), "success", "Ažuriranje proizvoda uspešno završeno");
+        }
+
+        private static void save3gProducts()
+        {
+            new _3gBL().SaveProducts();
         }
 
         
