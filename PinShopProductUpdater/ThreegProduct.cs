@@ -8,6 +8,7 @@ namespace PinShopProductUpdater
 {
     public class ThreegProduct
     {
+        public int ID { get; set; }
         public string Sifra { get; set; }
         public string Naziv { get; set; }
         public string Kategorija1 { get; set; }
@@ -19,8 +20,9 @@ namespace PinShopProductUpdater
         public bool Dostupan { get; set; }
         public bool NaAkciji { get; set; }
         public string Opis { get; set; }
-        public string Barkod { get;set; }
+        public string Barkod { get; set; }
         public string Slike { get; set; }
         public string Brand { get; set; }
+        public string Timestamp { get; set; }
     }
 }

@@ -19,12 +19,13 @@ namespace PinShopProductUpdater
 
         static void Main(string[] args)
         {
-            save3gProducts();
+            //save3gProducts();
+            update3gProducts();
             try
             { 
                 logFilename = string.Format("{0:00}", DateTime.Now.Day) + string.Format("{0:00}", DateTime.Now.Month) + DateTime.Now.Year.ToString() + string.Format("{0:00}", DateTime.Now.Hour) + string.Format("{0:00}", DateTime.Now.Minute) + ".log";
                 startDateTime = DateTime.Now.ToString();
-                saveProductsForCategories();
+                //saveProductsForCategories();
             }
             catch(Exception ex)
             {
@@ -93,6 +94,11 @@ namespace PinShopProductUpdater
         private static void save3gProducts()
         {
             new _3gBL().SaveProducts();
+        }
+
+        private static void update3gProducts()
+        {
+            new _3gBL().UpdateProducts();
         }
 
         
