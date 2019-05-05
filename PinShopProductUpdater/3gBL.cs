@@ -30,8 +30,9 @@ namespace PinShopProductUpdater
             return xmlDoc;
         }
 
-        private void downloadFile()
+        private void downloadFile(string logFilename)
         {
+            Common.log("Preuzimam zip file od 3g-a...", true, logFilename);
             WebClient webClient = new WebClient();
             webClient.DownloadFile(ConfigurationManager.AppSettings["threegFileUrl"], "threegProducts.zip");
 
@@ -55,11 +56,13 @@ namespace PinShopProductUpdater
             System.IO.Compression.ZipFile.ExtractToDirectory("threegProducts.zip", "threegProducts");
         }
 
-        public string[] SaveProducts()
+        public int SaveProducts(string logFilename)
         {
-            downloadFile();
+            Common.log("Započeto preuzimanje 3g proizvoda", true, logFilename);
+            downloadFile(logFilename);
             XmlDocument xmlDoc = loadDataFromFile("threegProducts/3gPinZr.xml");
             List<ThreegProduct> products = new List<ThreegProduct>();
+            int totalProducts = 0;
             //DataTable products = new DataTable();
             //products.Columns.Add("id", typeof(int));
             //products.Columns.Add("sifra", typeof(string));
@@ -113,7 +116,8 @@ namespace PinShopProductUpdater
 
                     if (products.Count == 200)
                     { 
-                        sendProducts(products);
+                        sendProducts(products, logFilename);
+                        totalProducts += products.Count;
                         products.Clear();
                     }
                 }
@@ -121,11 +125,16 @@ namespace PinShopProductUpdater
                 //new _3gDL().SaveProducts(products);
                 
             }
-            return products.Count > 0 ? sendProducts(products) : new string[] { "0", "0" };
+            sendProducts(products, logFilename);
+            totalProducts += products.Count;
+            //return products.Count > 0 ? sendProducts(products, logFilename) : new string[] { "0", "0" };
+            Common.log("Sačuvano " + totalProducts.ToString() + " proizvoda.", true, logFilename);
+            return totalProducts;
         }
 
-        private string[] sendProducts(List<ThreegProduct> products)
+        private string[] sendProducts(List<ThreegProduct> products, string logFilename)
         {
+            Common.log("Šaljem " + products.Count.ToString() + " proizvoda u bazu...", true, logFilename);
             //WebProxy proxy = new WebProxy("http://127.0.0.1/", 8888);
             //proxy.BypassProxyOnLocal = false;
             //WebRequest.DefaultWebProxy = proxy;
@@ -149,24 +158,44 @@ namespace PinShopProductUpdater
             {
                 var result = reader.ReadToEnd();
                 //status = result.Substring(1, result.Length - 2).Split(',');
+                if (result == "1")
+                    Common.log("Poslato.", true, logFilename);
             }
                 
 
             return status;
         }
 
-        public void UpdateProducts()
+        public void UpdateProducts(string logFilename)
         {
+            Common.log("Započeto ažuriranje proizvoda...", true, logFilename);
+            Common.log("Preuzimam kategorije za ažuriranje...", true, logFilename);
             List<CategorySimple> categories = new CategoryBL().GetCategories();
+            Common.log("Preuzeto " + categories.Count.ToString() + " kategorija.", true, logFilename);
+            StringBuilder updateProductStatus = new StringBuilder();
 
             foreach(CategorySimple category in categories)
             {
                 //get threeg categories for category
+                Common.log("Preuzimam 3g kategorije za kategoriju: " + category.Name, true, logFilename);
                 List<CategorySimple> threegCategories = getThreegCategoriesForCategory(category.CategoryID);
+                Common.log("Preuzeto " + threegCategories.Count.ToString() + " 3g kategorija.", true, logFilename);
 
+                int updatedProductsCount = 0;
+                int newProductsCount = 0;
                 foreach (CategorySimple threegCategory in threegCategories)
-                    UpdateProductsForCategory(category.CategoryID, threegCategory.CategoryID);
+                {
+                    Common.log("Ažuriram proizvode za " + threegCategory.Name + " kategoriju", true, logFilename);
+                    string[] status = UpdateProductsForCategory(category.CategoryID, threegCategory.CategoryID);
+                    updatedProductsCount += int.Parse(status[1]);
+                    newProductsCount += int.Parse(status[0]);
+                }
+                //Common.log("Ukupno ažurirano: " + status[1] + ". Ukupno novih: " + status[0], true, logFilename);
+                Common.log("Ukupno ažurirano: " + updatedProductsCount.ToString() + ". Ukupno novih: " + newProductsCount.ToString(), true, logFilename);
+                if(updatedProductsCount > 0 || newProductsCount > 0)
+                    updateProductStatus.Append("<p>Kategorija: " + category.Name + " - ukupno novih: " + newProductsCount.ToString() + "- ukupno ažuriranih: " + updatedProductsCount.ToString() + " - <a href='" + ConfigurationManager.AppSettings["webshopAdminUrl"] + "/getProductsThreeg.aspx?categoryID=" + category.CategoryID + "'>Link</a></p>");
             }
+            Common.sendMail(updateProductStatus.ToString(), "success", "Ažuriranje 3g proizvoda uspešno završeno.");
         }
 
         private List<CategorySimple> getThreegCategoriesForCategory(int categoryID)
@@ -182,7 +211,7 @@ namespace PinShopProductUpdater
             return JsonConvert.DeserializeObject<List<CategorySimple>>(responseString);
         }
 
-        public void UpdateProductsForCategory(int categoryID, int threegCategoryID)
+        public string[] UpdateProductsForCategory(int categoryID, int threegCategoryID)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(ConfigurationManager.AppSettings["webUrl"] + "product/UpdateThreegProducts");
             request.Method = "POST";
@@ -202,6 +231,7 @@ namespace PinShopProductUpdater
             using (StreamReader reader = new StreamReader(response.GetResponseStream()))
             {
                 var value = reader.ReadToEnd();
+                return value.Substring(1, value.Length - 2).Split(',');
             }
         }
     }
