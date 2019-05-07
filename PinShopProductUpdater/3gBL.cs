@@ -9,6 +9,7 @@ using System.Net;
 using System.Configuration;
 using System.IO;
 using Newtonsoft.Json;
+using System.Globalization;
 
 namespace PinShopProductUpdater
 {
@@ -95,13 +96,13 @@ namespace PinShopProductUpdater
                     product.Kategorija2 = artikal.SelectSingleNode("kategorija2").InnerText.Trim();
                     product.Kategorija3 = artikal.SelectSingleNode("kategorija3").InnerText.Trim();
                     double vpCena = 0;
-                    double.TryParse(artikal.SelectSingleNode("vpCena").InnerText.Trim().Replace('.',','), out vpCena);
+                    double.TryParse(artikal.SelectSingleNode("vpCena").InnerText.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture.NumberFormat, out vpCena);
                     product.VpCena = vpCena;
                     double mpCena = 0;
-                    double.TryParse(artikal.SelectSingleNode("mpCena").InnerText.Trim().Replace('.',','), out mpCena);
+                    double.TryParse(artikal.SelectSingleNode("mpCena").InnerText.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture.NumberFormat, out mpCena);
                     product.MpCena = mpCena;
                     double rabat = 0;
-                    double.TryParse(artikal.SelectSingleNode("rabat").InnerText.Trim().Replace('.',','), out rabat);
+                    double.TryParse(artikal.SelectSingleNode("rabat").InnerText.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture.NumberFormat, out rabat);
                     product.Rabat = rabat;
                     product.Dostupan = artikal.SelectSingleNode("dostupan").InnerText.Trim() == "1" ? true : false;
                     product.NaAkciji = artikal.SelectSingleNode("naAkciji").InnerText.Trim() == "1" ? true : false;
@@ -177,19 +178,20 @@ namespace PinShopProductUpdater
             foreach(CategorySimple category in categories)
             {
                 //get threeg categories for category
-                Common.log("Preuzimam 3g kategorije za kategoriju: " + category.Name, true, logFilename);
-                List<CategorySimple> threegCategories = getThreegCategoriesForCategory(category.CategoryID);
-                Common.log("Preuzeto " + threegCategories.Count.ToString() + " 3g kategorija.", true, logFilename);
+                //Common.log("Preuzimam 3g kategorije za kategoriju: " + category.Name, true, logFilename);
+                //List<CategorySimple> threegCategories = getThreegCategoriesForCategory(category.CategoryID);
+                //Common.log("Preuzeto " + threegCategories.Count.ToString() + " 3g kategorija.", true, logFilename);
 
                 int updatedProductsCount = 0;
                 int newProductsCount = 0;
-                foreach (CategorySimple threegCategory in threegCategories)
-                {
-                    Common.log("Ažuriram proizvode za " + threegCategory.Name + " kategoriju", true, logFilename);
-                    string[] status = UpdateProductsForCategory(category.CategoryID, threegCategory.CategoryID);
+                //foreach (CategorySimple threegCategory in threegCategories)
+                //{
+                //Common.log("Ažuriram proizvode za " + threegCategory.Name + " kategoriju", true, logFilename);
+                //string[] status = UpdateProductsForCategory(category.CategoryID, threegCategory.CategoryID);
+                string[] status = UpdateProductsForCategory(category.CategoryID, -1);
                     updatedProductsCount += int.Parse(status[1]);
                     newProductsCount += int.Parse(status[0]);
-                }
+                //}
                 //Common.log("Ukupno ažurirano: " + status[1] + ". Ukupno novih: " + status[0], true, logFilename);
                 Common.log("Ukupno ažurirano: " + updatedProductsCount.ToString() + ". Ukupno novih: " + newProductsCount.ToString(), true, logFilename);
                 if(updatedProductsCount > 0 || newProductsCount > 0)
@@ -218,13 +220,14 @@ namespace PinShopProductUpdater
             request.ContentType = "application/json";
             request.MediaType = "json";
 
-            int[] categoryThreegCategory = new int[2];
-            categoryThreegCategory[0] = categoryID;
-            categoryThreegCategory[1] = threegCategoryID;
+            //int[] categoryThreegCategory = new int[2];
+            //categoryThreegCategory[0] = categoryID;
+            //categoryThreegCategory[1] = threegCategoryID;
 
             using (StreamWriter writer = new StreamWriter(request.GetRequestStream()))
             {
-                writer.Write(JsonConvert.SerializeObject(categoryThreegCategory));
+                //writer.Write(JsonConvert.SerializeObject(categoryThreegCategory));
+                writer.Write(JsonConvert.SerializeObject(categoryID));
             }
 
             var response = (HttpWebResponse)request.GetResponse();
